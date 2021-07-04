@@ -9,6 +9,8 @@ import "@aave/protocol-v2/contracts/interfaces/ILendingPoolAddressesProvider.sol
 import "@aave/protocol-v2/contracts/interfaces/IAToken.sol";
 import {WadRayMath} from "@aave/protocol-v2/contracts/protocol/libraries/math/WadRayMath.sol";
 import {PercentageMath} from "@aave/protocol-v2/contracts/protocol/libraries/math/PercentageMath.sol";
+import {SafeMath} from "@aave/protocol-v2/contracts/protocol/libraries/math/MathUtils.sol";
+import "hardhat/console.sol";
 
 /**
  * @title for Proxy
@@ -30,11 +32,12 @@ contract BaseContract is Initializable {
  * @title ClimateWarriors
  * @dev fight against the climate change with the climate warriors
  */
-contract YourContract is Ownable{
-
-    using WadRayMath for uint256;
-    using PercentageMath for uint256;
+contract YourContract is Ownable {
     
+    address public _owner;
+    using SafeMath for uint256;
+    using WadRayMath for uint256;
+
     //IAToken DAI = IAToken(0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD);
     //IAToken aDAI = IAToken(0xdCf0aF9e59C002FA3AA091a46196b37530FD48a8);
     //IAToken USDT = IAToken(0x13512979ADE267AB5100878E2e0f485B568328a4);
@@ -44,72 +47,96 @@ contract YourContract is Ownable{
     
     constructor () public {
         USDC.approve(address(lendingPool), type(uint).max);
-        owner = msg.sender; 
+        _owner = msg.sender; 
     }
     
-    event Username(string _name);
-    event DepositStaking(uint256 _amount, uint256 _generosity, uint256 _time);
-    event Withdrawing(uint256 _amount);
-    event CalcInterest(uint256 _totalBalance, uint256 _onlyInterest, uint256 _earned, uint256 _donated );
+    event Deposit(uint256 _amount);
+    event Withdraw(uint256 _amount, uint256 _earned);
+    event Funding(uint256 _donated, address _from);
 
     // Kovan //
     address usdcAddress = 0xe22da380ee6B445bb8273C81944ADEB6E8450422;
     IAToken USDC = IAToken(usdcAddress);
     IAToken aUSDC = IAToken(0xe12AFeC5aa12Cf614678f9bFeeB98cA9Bb95b5B0);
+    IAToken MCO2 = IAToken(0xfC98e825A2264D890F9a1e68ed50E1526abCcacD);
     //
     ILendingPoolAddressesProvider provider = ILendingPoolAddressesProvider(address(0x88757f2f99175387aB4C6a4b3067c77A695b0349)); // kovan address 
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     //
 
+    uint256 totalaUSDCdonated;
+
     struct Character {
-        string name;
         uint256 deposited;
         uint256 totalBalance;
-        uint256 onlyInterest;
-        uint256 generosity; // 1-100
         uint256 earned;
         uint256 donated;
     }
     
     mapping (address => Character) public account;
-    
-    function setUsername(string memory _name) public {
-        account[msg.sender].name = _name;
-        emit Username(_name);
-    }
 
-    function depositStakeUSDC(uint256 _amount, uint256 _generosity) 
+    function deposit(uint256 _amount) 
     public payable{
       require(IERC20(usdcAddress).balanceOf(msg.sender) > 0, "Staking amount must be higher than 0");
-      USDC.transferFrom(msg.sender,address(this), _amount);
-      account[msg.sender].deposited += _amount;
-      account[msg.sender].generosity = _generosity;
+      USDC.transferFrom(msg.sender, address(this), _amount);
+      Character storage user = account[msg.sender];
+      user.deposited += _amount;
       lendingPool.deposit(address(usdcAddress), _amount, address(this), 0); // 
-      emit DepositStaking(_amount, _generosity, now);
+      emit Deposit(_amount);
     }
 
-    function calcInterest() internal{
-        account[msg.sender].totalBalance = account[msg.sender].deposited.rayMul(lendingPool.getReserveNormalizedIncome(usdcAddress));
-        account[msg.sender].onlyInterest = account[msg.sender].totalBalance - account[msg.sender].deposited;
-        account[msg.sender].earned = account[msg.sender].onlyInterest.percentMul(account[msg.sender].generosity.rayMul(100));
-        account[msg.sender].donated = account[msg.sender].onlyInterest - account[msg.sender].earned;
-        emit CalcInterest(account[msg.sender].totalBalance, account[msg.sender].onlyInterest, account[msg.sender].earned, account[msg.sender].donated);
-    }
-
-    function withdrawAll() public {
+    function withdraw(uint8 generosity) public {
         require(account[msg.sender].deposited != 0, "You don't have any funds here!");
-        calcInterest();
-        uint256 ownBalance = account[msg.sender].totalBalance-account[msg.sender].donated;
-        account[msg.sender].deposited = 0;
-        account[msg.sender].totalBalance = 0;
-        account[address(this)] = account[msg.sender].donated;
-        lendingPool.withdraw(address(usdcAddress), ownBalance, msg.sender);
-        emit Withdrawing(ownBalance);
+        require(generosity >= 10, "At least 10% of the interest will be donated!");
+
+        Character storage user = account[msg.sender];
+        
+        uint256 totalBalance;
+        uint256 onlyInterest;
+        uint256 donated;
+        uint256 earned;
+        uint256 withdrawalAmount;
+
+        (totalBalance, onlyInterest,  donated, earned, withdrawalAmount) = withdrawalCalculator(user.deposited, lendingPool.getReserveNormalizedIncome(usdcAddress), generosity);
+
+        lendingPool.withdraw(address(usdcAddress), withdrawalAmount, msg.sender);
+
+        totalaUSDCdonated += donated;
+        user.deposited = 0;
+        user.totalBalance = 0;
+
+        emit Withdraw(withdrawalAmount, earned);
+        emit Funding(donated, msg.sender);
     }
 
-    function setOwner(address newOwner) ownerOnly external {
-     owner = newOwner;
-  }
+    function withdrawalCalculator(uint256 _balance, uint256 _interestRate, uint256 _generosity) public pure returns (uint256, uint256, uint256, uint256, uint256) {
+        uint256 totalBalance = _balance.rayMul(_interestRate);
+        uint256 onlyInterest = totalBalance - _balance;
+        uint256 donated = onlyInterest.mul(_generosity).div(100);
+        uint256 earned = onlyInterest - donated;
+        uint256 withdrawalAmount = totalBalance - donated;
+        return (totalBalance, onlyInterest,  donated, earned, withdrawalAmount);
+    }
+
+    function withdrawToBuyCarbonCredits() onlyOwner public {
+        lendingPool.withdraw(address(usdcAddress), account[address(this)].totalBalance, _owner); // 
+    }
+
+    function checkCarbonCredits() public view returns(uint256){
+        return MCO2.balanceOf(address(this));
+    }
+
+    function setOwner(address newOwner) onlyOwner external {
+        _owner = newOwner;
+    }
+
+    function checkAccount() public view returns ( uint256, uint256, uint256, uint256) {
+        return (account[msg.sender].deposited, 
+                account[msg.sender].totalBalance,
+                account[msg.sender].earned,
+                account[msg.sender].donated);
+     }
+  
 }
 
 
