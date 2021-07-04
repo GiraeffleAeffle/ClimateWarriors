@@ -102,6 +102,7 @@ contract YourContract is Ownable {
         lendingPool.withdraw(address(usdcAddress), withdrawalAmount, msg.sender);
 
         totalaUSDCdonated += donated;
+        
         user.deposited = 0;
         user.totalBalance = 0;
 
@@ -112,7 +113,8 @@ contract YourContract is Ownable {
     function withdrawalCalculator(uint256 _balance, uint256 _interestRate, uint256 _generosity) public pure returns (uint256, uint256, uint256, uint256, uint256) {
         uint256 totalBalance = _balance.rayMul(_interestRate);
         uint256 onlyInterest = totalBalance - _balance;
-        uint256 donated = onlyInterest.mul(_generosity).div(100);
+        uint256 interestGen = onlyInterest.mul(_generosity);
+        uint256 donated = interestGen.div(100);
         uint256 earned = onlyInterest - donated;
         uint256 withdrawalAmount = totalBalance - donated;
         return (totalBalance, onlyInterest,  donated, earned, withdrawalAmount);

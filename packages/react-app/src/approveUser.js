@@ -11,7 +11,7 @@ const provider = new ethers.providers.JsonRpcProvider("https://kovan.infura.io/v
 
 // You can also use an ENS name for the contract address
 const usdcAddress = "0xe22da380ee6B445bb8273C81944ADEB6E8450422";
-const climateWarriorsAddress = "0x620F5209125dC4417A4f7929b7abdF5a575001BE";
+const climateWarriorsAddress = "0x6955B59c0B3EF3Ad5cAF44298D740af3004dFF3b";
 // The ERC-20 Contract ABI, which is a common contract interface
 // for tokens (this is the Human-Readable ABI format)
 const usdcAbi = [
@@ -524,11 +524,6 @@ const climateWarriorsAbi = [
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "pure",
@@ -567,14 +562,14 @@ const MAX_UINT256 = ethers.constants.MaxUint256;
 // Send USDC to Aave
 
 // const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
-// const sendPromise21 = climateWarriorsContract.deposit(10000000);
+// const sendPromise21 = climateWarriorsContract.deposit(5000000);
 
 // sendPromise21.then(transaction => {
 //   console.log(transaction);
 // });
 
 // const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
-// const sendPromise22 = climateWarriorsContract2.deposit(1000000000);
+// const sendPromise22 = climateWarriorsContract2.deposit(2000000000);
 
 // sendPromise22.then(transaction => {
 //   console.log(transaction);
@@ -583,7 +578,7 @@ const MAX_UINT256 = ethers.constants.MaxUint256;
 // aUSDC withdraw
 
 // const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
-// const sendPromise31 = climateWarriorsContract.withdraw(50);
+// const sendPromise31 = climateWarriorsContract.withdraw(100);
 
 // sendPromise31.then(transaction => {
 //   console.log(transaction);
@@ -598,39 +593,37 @@ const MAX_UINT256 = ethers.constants.MaxUint256;
 
 /// withdrawal calculator
 
-// const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
-// const sendPromise41 = climateWarriorsContract.withdrawalCalculator(
-//   100000000,
-//   new ethers.BigNumber.from("1100000000000000000000000000"),
-//   75,
-// );
+const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
+const sendPromise41 = climateWarriorsContract.withdrawalCalculator(
+  100000000,
+  new ethers.BigNumber.from("1100000000000000000000000000"),
+  100,
+);
 
-// sendPromise41.then(transaction => {
-//   console.log(transaction);
-//   console.log("totalBalance: ", transaction[0].toNumber());
-//   console.log("onlyInterest: ", transaction[1].toNumber());
-//   console.log("onlyInterestGenerosity: ", transaction[2].toNumber());
-//   console.log("donated: ", transaction[3].toNumber());
-//   console.log("earned: ", transaction[4].toNumber());
-//   console.log("withdrawalAmount: ", transaction[5].toNumber());
-// });
+sendPromise41.then(transaction => {
+  console.log(transaction);
+  console.log("totalBalance: ", transaction[0].toNumber());
+  console.log("onlyInterest: ", transaction[1].toNumber());
+  console.log("donated: ", transaction[2].toNumber());
+  console.log("earned: ", transaction[3].toNumber());
+  console.log("withdrawalAmount: ", transaction[4].toNumber());
+});
 
-// const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
-// const sendPromise42 = climateWarriorsContract2.withdrawalCalculator(
-//   100000000,
-//   new ethers.BigNumber.from("1000000000000000000000000000"),
-//   100,
-// );
+const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
+const sendPromise42 = climateWarriorsContract2.withdrawalCalculator(
+  100000000,
+  new ethers.BigNumber.from("1100000000000000000000000000"),
+  50,
+);
 
-// sendPromise42.then(transaction => {
-//   console.log(transaction);
-//   // console.log("totalBalance: ", transaction[0].toNumber());
-//   // console.log("onlyInterest: ", transaction[1].toNumber());
-//   // console.log("onlyInterestGenerosity: ", transaction[2].toNumber());
-//   // console.log("donated: ", transaction[3].toNumber());
-//   // console.log("earned: ", transaction[4].toNumber());
-//   // console.log("withdrawalAmount: ", transaction[5].toNumber());
-// });
+sendPromise42.then(transaction => {
+  console.log(transaction);
+  console.log("totalBalance: ", transaction[0].toNumber());
+  console.log("onlyInterest: ", transaction[1].toNumber());
+  console.log("donated: ", transaction[2].toNumber());
+  console.log("earned: ", transaction[3].toNumber());
+  console.log("withdrawalAmount: ", transaction[4].toNumber());
+});
 
 /// get account data
 
