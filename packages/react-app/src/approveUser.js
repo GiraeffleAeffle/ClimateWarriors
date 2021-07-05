@@ -550,15 +550,15 @@ const MAX_UINT256 = ethers.constants.MaxUint256;
 
 // approve USDC to Contract
 
-// const usdcContract = new ethers.Contract(usdcAddress, usdcAbi, wallet);
-// const sendPromise11 = usdcContract.approve(climateWarriorsAddress, MAX_UINT256);
+const usdcContract = new ethers.Contract(usdcAddress, usdcAbi, wallet);
+const sendPromise11 = usdcContract.approve(climateWarriorsAddress, MAX_UINT256);
 
-// sendPromise11.then(transaction => {
-//   console.log(transaction);
-// });
+sendPromise11.then(transaction => {
+  console.log(transaction);
+});
 
-// const usdcContract2 = new ethers.Contract(usdcAddress, usdcAbi, wallet2);
-// const sendPromise12 = usdcContract2.approve(climateWarriorsAddress, MAX_UINT256);
+const usdcContract2 = new ethers.Contract(usdcAddress, usdcAbi, wallet2);
+const sendPromise12 = usdcContract2.approve(climateWarriorsAddress, MAX_UINT256);
 
 // sendPromise12.then(transaction => {
 //   console.log(transaction);
@@ -566,35 +566,35 @@ const MAX_UINT256 = ethers.constants.MaxUint256;
 
 // Send USDC to Aave
 
-const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
-const sendPromise21 = climateWarriorsContract.deposit(200000000);
-
-sendPromise21.then(transaction => {
-  console.log(transaction);
-});
-
-const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
-const sendPromise22 = climateWarriorsContract2.deposit(200000000);
-
-sendPromise22.then(transaction => {
-  console.log(transaction);
-});
-
-// aUSDC withdraw
-
 // const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
-// const sendPromise31 = climateWarriorsContract.withdraw(100);
+// const sendPromise21 = climateWarriorsContract.deposit(200000000);
 
-// sendPromise31.then(transaction => {
+// sendPromise21.then(transaction => {
 //   console.log(transaction);
 // });
 
 // const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
-// const sendPromise32 = climateWarriorsContract2.withdraw(10);
+// const sendPromise22 = climateWarriorsContract2.deposit(200000000);
 
-// sendPromise32.then(transaction => {
+// sendPromise22.then(transaction => {
 //   console.log(transaction);
 // });
+
+// aUSDC withdraw
+
+const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
+const sendPromise31 = climateWarriorsContract.withdraw(100);
+
+sendPromise31.then(transaction => {
+  console.log(transaction);
+});
+
+const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
+const sendPromise32 = climateWarriorsContract2.withdraw(10);
+
+sendPromise32.then(transaction => {
+  console.log(transaction);
+});
 
 /// withdrawal calculator
 
