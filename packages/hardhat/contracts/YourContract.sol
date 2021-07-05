@@ -34,9 +34,17 @@ contract BaseContract is Initializable {
  */
 contract YourContract is Ownable {
     
+    // Events
+
+    event Deposit(uint256 _amount);
+    event Withdraw(uint256 _amount, uint256 _earned);
+    event Funding(uint256 _donated, address _from);
+
     address public _owner;
     using SafeMath for uint256;
     using WadRayMath for uint256;
+    using PercentageMath for uint256;
+    
 
     //IAToken DAI = IAToken(0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD);
     //IAToken aDAI = IAToken(0xdCf0aF9e59C002FA3AA091a46196b37530FD48a8);
@@ -50,17 +58,14 @@ contract YourContract is Ownable {
         _owner = msg.sender; 
     }
     
-    event Deposit(uint256 _amount);
-    event Withdraw(uint256 _amount, uint256 _earned);
-    event Funding(uint256 _donated, address _from);
 
     // Kovan //
-    address usdcAddress = 0xe22da380ee6B445bb8273C81944ADEB6E8450422;
+    address usdcAddress = 0xe22da380ee6B445bb8273C81944ADEB6E8450422; // kovan
     IAToken USDC = IAToken(usdcAddress);
-    IAToken aUSDC = IAToken(0xe12AFeC5aa12Cf614678f9bFeeB98cA9Bb95b5B0);
+    IAToken aUSDC = IAToken(0xe12AFeC5aa12Cf614678f9bFeeB98cA9Bb95b5B0); // kovan
     IAToken MCO2 = IAToken(0xfC98e825A2264D890F9a1e68ed50E1526abCcacD);
     //
-    ILendingPoolAddressesProvider provider = ILendingPoolAddressesProvider(address(0x88757f2f99175387aB4C6a4b3067c77A695b0349)); // kovan address 
+    ILendingPoolAddressesProvider provider = ILendingPoolAddressesProvider(address(0x88757f2f99175387aB4C6a4b3067c77A695b0349)); // kovan
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     //
 
@@ -71,21 +76,32 @@ contract YourContract is Ownable {
         uint256 totalBalance;
         uint256 earned;
         uint256 donated;
+        uint256 reserveIndex;
     }
     
     mapping (address => Character) public account;
 
     function deposit(uint256 _amount) 
-    public payable{
-      require(IERC20(usdcAddress).balanceOf(msg.sender) > 0, "Staking amount must be higher than 0");
-      USDC.transferFrom(msg.sender, address(this), _amount);
-      Character storage user = account[msg.sender];
-      user.deposited += _amount;
-      lendingPool.deposit(address(usdcAddress), _amount, address(this), 0); // 
-      emit Deposit(_amount);
+    public{
+        USDC.transferFrom(msg.sender, address(this), _amount);
+        Character storage user = account[msg.sender];
+        lendingPool.deposit(address(usdcAddress), _amount, address(this), 0);
+        account[msg.sender].reserveIndex = lendingPool.getReserveNormalizedIncome(usdcAddress);
+        user.deposited += _amount.rayDiv(lendingPool.getReserveNormalizedIncome(usdcAddress));
+        emit Deposit(_amount);  
     }
 
-    function withdraw(uint8 generosity) public {
+    function withdrawalCalculator(uint256 _balance, uint256 _interestRate, uint256 _generosity) public view returns (uint256, uint256, uint256, uint256, uint256) {
+        uint256 depositBalance = _balance.rayMul(account[msg.sender].reserveIndex);
+        uint256 newBalance = _balance.rayMul(_interestRate);
+        uint256 onlyInterest = newBalance - depositBalance;
+        uint256 donated = onlyInterest.percentMul(_generosity.mul(100));
+        uint256 earned = onlyInterest - donated;
+        uint256 withdrawalAmount = newBalance - donated;
+        return (newBalance, onlyInterest,  donated, earned, withdrawalAmount);
+    }
+
+    function withdraw(uint256 generosity) public {
         require(account[msg.sender].deposited != 0, "You don't have any funds here!");
         require(generosity >= 10, "At least 10% of the interest will be donated!");
 
@@ -98,26 +114,16 @@ contract YourContract is Ownable {
         uint256 withdrawalAmount;
 
         (totalBalance, onlyInterest,  donated, earned, withdrawalAmount) = withdrawalCalculator(user.deposited, lendingPool.getReserveNormalizedIncome(usdcAddress), generosity);
-
-        lendingPool.withdraw(address(usdcAddress), withdrawalAmount, msg.sender);
+        
+        lendingPool.withdraw(address(usdcAddress), totalBalance, address(this));
 
         totalaUSDCdonated += donated;
-        
+
         user.deposited = 0;
         user.totalBalance = 0;
-
+        USDC.transfer(msg.sender, withdrawalAmount);
         emit Withdraw(withdrawalAmount, earned);
         emit Funding(donated, msg.sender);
-    }
-
-    function withdrawalCalculator(uint256 _balance, uint256 _interestRate, uint256 _generosity) public pure returns (uint256, uint256, uint256, uint256, uint256) {
-        uint256 totalBalance = _balance.rayMul(_interestRate);
-        uint256 onlyInterest = totalBalance - _balance;
-        uint256 interestGen = onlyInterest.mul(_generosity);
-        uint256 donated = interestGen.div(100);
-        uint256 earned = onlyInterest - donated;
-        uint256 withdrawalAmount = totalBalance - donated;
-        return (totalBalance, onlyInterest,  donated, earned, withdrawalAmount);
     }
 
     function withdrawToBuyCarbonCredits() onlyOwner public {

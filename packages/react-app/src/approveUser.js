@@ -11,7 +11,7 @@ const provider = new ethers.providers.JsonRpcProvider("https://kovan.infura.io/v
 
 // You can also use an ENS name for the contract address
 const usdcAddress = "0xe22da380ee6B445bb8273C81944ADEB6E8450422";
-const climateWarriorsAddress = "0x6955B59c0B3EF3Ad5cAF44298D740af3004dFF3b";
+const climateWarriorsAddress = "0xFC5051C560e8C311aF3dA1CD51aA4B462f9aD977";
 // The ERC-20 Contract ABI, which is a common contract interface
 // for tokens (this is the Human-Readable ABI format)
 const usdcAbi = [
@@ -355,6 +355,11 @@ const climateWarriorsAbi = [
         "internalType": "uint256",
         "name": "donated",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reserveIndex",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -411,7 +416,7 @@ const climateWarriorsAbi = [
     ],
     "name": "deposit",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -463,9 +468,9 @@ const climateWarriorsAbi = [
   {
     "inputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint256",
         "name": "generosity",
-        "type": "uint8"
+        "type": "uint256"
       }
     ],
     "name": "withdraw",
@@ -526,7 +531,7 @@ const climateWarriorsAbi = [
         "type": "uint256"
       }
     ],
-    "stateMutability": "pure",
+    "stateMutability": "view",
     "type": "function"
   }
 ];
@@ -561,19 +566,19 @@ const MAX_UINT256 = ethers.constants.MaxUint256;
 
 // Send USDC to Aave
 
-// const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
-// const sendPromise21 = climateWarriorsContract.deposit(5000000);
+const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
+const sendPromise21 = climateWarriorsContract.deposit(200000000);
 
-// sendPromise21.then(transaction => {
-//   console.log(transaction);
-// });
+sendPromise21.then(transaction => {
+  console.log(transaction);
+});
 
-// const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
-// const sendPromise22 = climateWarriorsContract2.deposit(2000000000);
+const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
+const sendPromise22 = climateWarriorsContract2.deposit(200000000);
 
-// sendPromise22.then(transaction => {
-//   console.log(transaction);
-// });
+sendPromise22.then(transaction => {
+  console.log(transaction);
+});
 
 // aUSDC withdraw
 
@@ -593,37 +598,37 @@ const MAX_UINT256 = ethers.constants.MaxUint256;
 
 /// withdrawal calculator
 
-const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
-const sendPromise41 = climateWarriorsContract.withdrawalCalculator(
-  100000000,
-  new ethers.BigNumber.from("1100000000000000000000000000"),
-  100,
-);
+// const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet);
+// const sendPromise41 = climateWarriorsContract.withdrawalCalculator(
+//   100000000,
+//   new ethers.BigNumber.from("1100000000000000000000000000"),
+//   100,
+// );
 
-sendPromise41.then(transaction => {
-  console.log(transaction);
-  console.log("totalBalance: ", transaction[0].toNumber());
-  console.log("onlyInterest: ", transaction[1].toNumber());
-  console.log("donated: ", transaction[2].toNumber());
-  console.log("earned: ", transaction[3].toNumber());
-  console.log("withdrawalAmount: ", transaction[4].toNumber());
-});
+// sendPromise41.then(transaction => {
+//   console.log(transaction);
+//   console.log("totalBalance: ", transaction[0].toNumber());
+//   console.log("onlyInterest: ", transaction[1].toNumber());
+//   console.log("donated: ", transaction[2].toNumber());
+//   console.log("earned: ", transaction[3].toNumber());
+//   console.log("withdrawalAmount: ", transaction[4].toNumber());
+// });
 
-const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
-const sendPromise42 = climateWarriorsContract2.withdrawalCalculator(
-  100000000,
-  new ethers.BigNumber.from("1100000000000000000000000000"),
-  50,
-);
+// const climateWarriorsContract2 = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, wallet2);
+// const sendPromise42 = climateWarriorsContract2.withdrawalCalculator(
+//   100000000,
+//   new ethers.BigNumber.from("1100000000000000000000000000"),
+//   50,
+// );
 
-sendPromise42.then(transaction => {
-  console.log(transaction);
-  console.log("totalBalance: ", transaction[0].toNumber());
-  console.log("onlyInterest: ", transaction[1].toNumber());
-  console.log("donated: ", transaction[2].toNumber());
-  console.log("earned: ", transaction[3].toNumber());
-  console.log("withdrawalAmount: ", transaction[4].toNumber());
-});
+// sendPromise42.then(transaction => {
+//   console.log(transaction);
+//   console.log("totalBalance: ", transaction[0].toNumber());
+//   console.log("onlyInterest: ", transaction[1].toNumber());
+//   console.log("donated: ", transaction[2].toNumber());
+//   console.log("earned: ", transaction[3].toNumber());
+//   console.log("withdrawalAmount: ", transaction[4].toNumber());
+// });
 
 /// get account data
 
