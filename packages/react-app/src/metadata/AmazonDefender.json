@@ -1,0 +1,28 @@
+{
+    "name": "Corupira - The Amazon Defender",    
+    "description": "Mystical creature that protects the animals and trees in the Amazon Forest. It has red hair and feet in a backward direction to confuse hunters. Doesn't like hunters and lumberjacks.",    
+    "image_url": "https://ipfs.io/ipfs/QmX3Y3Nyyyigr3RXyyE8nDjy9ZgEAZaB1Y7L9LZr8AANSr?filename=corupira_site.png",    
+    "traits": 
+      [
+        {
+            "trait_type": "Strength",            
+            "value": 60        
+        },
+        {
+            "trait_type": "Intelligence",            
+            "value": 100        
+        },
+        {
+            "trait_type": "Agility",            
+            "value": 84        
+        },
+        {
+            "trait_type": "Experience",
+            "value": 0
+        },
+        {
+            "trait_type": "Level",
+            "value": 1
+        }
+      ]
+  }

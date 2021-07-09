@@ -1,0 +1,28 @@
+{
+    "name": "The Coal Crusher",    
+    "description": "A creature that doesn't like the use of coal for the production of electricity. It can get very angry if it sees coal mining.",    
+    "image": "",    
+    "attributes": 
+      [
+        {
+            "trait_type": "Strength",            
+            "value": 100        
+        },
+        {
+            "trait_type": "Intelligence",            
+            "value": 60        
+        },
+        {
+            "trait_type": "Agility",            
+            "value": 84        
+        },
+        {
+            "trait_type": "Experience",
+            "value": 0
+        },
+        {
+            "trait_type": "Level",
+            "value": 1
+        }
+      ]
+  }
