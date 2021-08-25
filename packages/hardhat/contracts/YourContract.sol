@@ -19,7 +19,6 @@ import "hardhat/console.sol";
  /*
 contract BaseContract is Initializable {
     uint256 public x;
-
     function initialize(uint256 _x) public initializer {
         x = _x;
     }
@@ -53,19 +52,19 @@ contract YourContract is Ownable {
     //IAToken WBTC = IAToken(0xD1B98B6607330172f1D991521145A22BCe793277);
     //IAToken aWBTC = IAToken(0x62538022242513971478fcC7Fb27ae304AB5C29F);
     
-    constructor () public {
+    constructor () {
         USDC.approve(address(lendingPool), type(uint).max);
         _owner = msg.sender; 
     }
     
 
     // Kovan //
-    address usdcAddress = 0xe22da380ee6B445bb8273C81944ADEB6E8450422; // kovan
+    address usdcAddress = 0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e; // Mumbai
     IAToken USDC = IAToken(usdcAddress);
-    IAToken aUSDC = IAToken(0xe12AFeC5aa12Cf614678f9bFeeB98cA9Bb95b5B0); // kovan
-    IAToken MCO2 = IAToken(0xfC98e825A2264D890F9a1e68ed50E1526abCcacD);
+    IAToken aUSDC = IAToken(0x2271e3Fef9e15046d09E1d78a8FF038c691E9Cf9); // Mumbai
+    //IAToken MCO2 = IAToken(0xfC98e825A2264D890F9a1e68ed50E1526abCcacD);
     //
-    ILendingPoolAddressesProvider provider = ILendingPoolAddressesProvider(address(0x88757f2f99175387aB4C6a4b3067c77A695b0349)); // kovan
+    ILendingPoolAddressesProvider provider = ILendingPoolAddressesProvider(address(0x178113104fEcbcD7fF8669a0150721e231F0FD4B)); // kovan
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     //
 
@@ -85,8 +84,9 @@ contract YourContract is Ownable {
     public{
         USDC.transferFrom(msg.sender, address(this), _amount);
         Character storage user = account[msg.sender];
+        user.totalBalance += _amount;
         lendingPool.deposit(address(usdcAddress), _amount, address(this), 0);
-        account[msg.sender].reserveIndex = lendingPool.getReserveNormalizedIncome(usdcAddress);
+        user.reserveIndex = lendingPool.getReserveNormalizedIncome(usdcAddress);
         user.deposited += _amount.rayDiv(lendingPool.getReserveNormalizedIncome(usdcAddress));
         emit Deposit(_amount);  
     }
@@ -130,9 +130,9 @@ contract YourContract is Ownable {
         lendingPool.withdraw(address(usdcAddress), account[address(this)].totalBalance, _owner); // 
     }
 
-    function checkCarbonCredits() public view returns(uint256){
-        return MCO2.balanceOf(address(this));
-    }
+    //function checkCarbonCredits() public view returns(uint256){
+      //  return MCO2.balanceOf(address(this));
+    //}
 
     function setOwner(address newOwner) onlyOwner external {
         _owner = newOwner;
@@ -146,5 +146,3 @@ contract YourContract is Ownable {
      }
   
 }
-
-
